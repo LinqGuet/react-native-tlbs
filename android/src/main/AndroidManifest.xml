@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.guet.tlbs">
+
+    
+    <!-- 腾讯地图SDK所需的服务 -->
+    <application>
+        <service android:name="com.tencent.tencentmap.mapsdk.maps.service.TencentMapService" android:enabled="true" android:exported="true" />
+        <service android:name="com.tencent.tencentmap.mapsdk.maps.service.TencentMapNetworkService" android:enabled="true" android:exported="true" />
+    </application>
+</manifest>
