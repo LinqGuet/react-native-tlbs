@@ -9,6 +9,8 @@ import com.tencent.tencentmap.mapsdk.maps.model.*
 import com.tencent.tencentmap.mapsdk.maps.model.CameraPosition
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
+import android.graphics.Color;
+
 
 class TMapsViewModule : Module() {
   // 上下文和定位管理器
@@ -25,28 +27,30 @@ class TMapsViewModule : Module() {
     // Register view component
     View(TMapsView::class) {
       /** 地图加载完成事件 */
-      Events("onLoad","onMapClick","onMapLongClick","onCompassClick","onCameraChange","onMarkerClick")
+      Events(
+              "onLoad",
+              "onMapClick",
+              "onMapLongClick",
+              "onCompassClick",
+              "onCameraChange",
+              "onMarkerClick"
+      )
       /*
        * 地图类型
        */
-      Prop("mapType") { view: TMapsView, mapId: Int ->
-        view.tencentMap?.mapType = mapId
-
-      }
+      Prop("mapType") { view: TMapsView, mapId: Int -> view.tencentMap?.mapType = mapId }
 
       /** 是否开启交通流量 */
       Prop("trafficEnabled") { view: TMapsView, enabled: Boolean ->
         enabled.also { view.tencentMap?.isTrafficEnabled = it }
       }
 
-
-
       /*
        * 地图UI设置
        */
       Prop("uiSettings") { view: TMapsView, settings: TMapsUiSettings ->
         // 打印settings
-        
+
         if (view.tencentMap == null) {
           Log.e("TMapsViewModule", "mapUiSettings tencentMap is null")
           return@Prop
@@ -64,6 +68,19 @@ class TMapsViewModule : Module() {
         settings.myLocationButtonEnabled?.also { uiSettings?.isMyLocationButtonEnabled = it }
         settings.myLocationEnabled?.also { view.tencentMap?.isMyLocationEnabled = it }
 
+        if (settings.myLocationEnabled == true) {
+          val myStyle = MyLocationStyle().apply {
+            myLocationType (settings.myLocationStyle.myLocationType?: MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER)
+            strokeWidth (settings.myLocationStyle.strokeWidth ?: 10)
+            fillColor (settings.myLocationStyle.fillColor ?: 0xFF0000FF.toInt())
+            strokeColor (settings.myLocationStyle.strokeColor ?: 0xFF0000FF.toInt())
+            anchor(settings.myLocationStyle.anchor?.x ?: 0.5f, settings.myLocationStyle.anchor?.y ?: 0.5f)
+          }
+           //设置填充颜色为红色
+          view.tencentMap?.setMyLocationStyle(myStyle)
+         
+          Log.d("TMapsViewModule", "${settings.myLocationStyle.fillColor} myLocationStyle ${myStyle}")
+        }
 
         // return@Prop
       }
@@ -84,14 +101,13 @@ class TMapsViewModule : Module() {
           camera.maxZoom?.also { view.tencentMap?.setMaxZoomLevel(it.toInt()) }
         }
 
-
-
-        //判断camera的值是否与cameraPosition的值是否相等
+        // 判断camera的值是否与cameraPosition的值是否相等
         if (camera.center?.lat == cameraPosition?.target?.latitude &&
-            camera.center?.lng == cameraPosition?.target?.longitude &&
-            camera.rotation == cameraPosition?.bearing &&
-            camera.zoom == cameraPosition?.zoom &&
-            camera.pitch == cameraPosition?.tilt) {
+                        camera.center?.lng == cameraPosition?.target?.longitude &&
+                        camera.rotation == cameraPosition?.bearing &&
+                        camera.zoom == cameraPosition?.zoom &&
+                        camera.pitch == cameraPosition?.tilt
+        ) {
           return@Prop
         }
 

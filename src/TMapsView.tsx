@@ -3,6 +3,8 @@ import { requireNativeViewManager } from 'expo-modules-core';
 
 import * as React from 'react';
 
+import {processColor} from 'react-native'
+
 import { TMapsViewProps } from './tlsb.types';
 const NativeView = requireNativeViewManager('TMapsView');
 
@@ -27,6 +29,7 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
     onMapLongClick,
     onMarkerClick,
     markers,
+    uiSettings
 
   } = props;
 
@@ -82,12 +85,23 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
   })() : undefined;
 
 
+  const parsedUiSettings = uiSettings ? ({
+    ...uiSettings,
+    myLocationStyle: {
+      ...uiSettings?.myLocationStyle,
+      fillColor: processColor(uiSettings?.myLocationStyle?.fillColor)?? undefined,
+      strokeColor: processColor(uiSettings?.myLocationStyle?.strokeColor)?? undefined,
+    },
+  }) : undefined;
+
+
   if (!NativeView) {
     return null;
   }
   return (
     <NativeView
       {...props}
+      uiSettings={parsedUiSettings}
       markers={parsedMarkers}
       onLoad={onNativeMapLoaded}
       onMapClick={onNativeMapClick}

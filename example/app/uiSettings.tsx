@@ -4,8 +4,8 @@ import {
     PermissionsAndroid,
     Platform,
 } from 'react-native';
-import { LatLng, MapType, TMapsCameraPosition, TMapsUiSettings, TMapsView } from 'react-native-tlbs';
-import React, { useState ,useEffect} from 'react';
+import { LatLng, MapType, MyLocationStyleType, TMapsUiSettings, TMapsView } from 'react-native-tlbs';
+import React, { useState, useEffect } from 'react';
 
 export default function UiSettingsScence() {
 
@@ -24,6 +24,9 @@ export default function UiSettingsScence() {
         zoomControlsEnabled: true,
         myLocationButtonEnabled: true,
         myLocationEnabled: true,
+        myLocationStyle: {
+            myLocationType: MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER,
+        },
     });
 
     useEffect(() => {
@@ -55,6 +58,28 @@ export default function UiSettingsScence() {
         }
         return true;
     };
+
+   const  toggleMyLocationStyle = async () => {
+    // 随机生成一个颜色
+    const randomColor = () => {
+        const letters = '0123456789ABCDEF';
+        let color = '#';
+        for (let i = 0; i < 6; i++) {
+            color += letters[Math.floor(Math.random() * 16)];
+        }
+        return color;
+    }
+        setUiSettings({
+            ...uiSettings,
+            myLocationStyle: {
+                ...uiSettings?.myLocationStyle,
+                myLocationType: uiSettings?.myLocationStyle?.myLocationType === MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE ? MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER : MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE,
+                strokeWidth: 100,
+                strokeColor: randomColor(),
+                fillColor: randomColor(),
+            }
+        })
+    }
 
 
 
@@ -175,6 +200,14 @@ export default function UiSettingsScence() {
                                 zoomGesturesEnabled: v,
                             })
                         }}
+                    />
+                </View>
+
+                <View style={styles.controlItem}>
+                    <Text style={styles.controlLabel}>定位样式</Text>
+                    <Button
+                        title={`切换定位样式: `}
+                        onPress={toggleMyLocationStyle}
                     />
                 </View>
 

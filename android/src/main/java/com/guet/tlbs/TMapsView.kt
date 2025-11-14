@@ -161,13 +161,13 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
 
                     // // 设置位置源
                     it.map?.setLocationSource(locationSource)
-                    tencentMap?.setMyLocationStyle(
-                            MyLocationStyle().apply {
-                                myLocationType(
-                                        MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER
-                                )
-                            }
-                    )
+                    // tencentMap?.setMyLocationStyle(
+                    //         MyLocationStyle().apply {
+                    //             myLocationType(
+                    //                     MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER
+                    //             )
+                    //         }
+                    // )
 
                     // // 确保启用定位和定位按钮
                     // tencentMap?.isMyLocationEnabled = true

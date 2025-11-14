@@ -13,6 +13,8 @@ import expo.modules.kotlin.sharedobjects.SharedRef
 import expo.modules.kotlin.types.Either
 import expo.modules.kotlin.types.toKClass
 import java.util.UUID
+import android.util.Log
+
 
 fun getIconDescriptor(icon: Either<SharedRef<Drawable>, SharedRef<Bitmap>>?): BitmapDescriptor? {
 
@@ -40,6 +42,21 @@ data class MapLatLng(
         }
 }
 
+data class MyLocationStyleRecord(
+        @Field val myLocationType: Int? = MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER,
+
+        /** 定位图标的锚点位置，默认为 (0.5f, 0.5f) */
+        @Field val anchor: AnchorRecord? = null,
+        /** 定位点的图标 */
+        @Field val icon: Either<SharedRef<Drawable>, SharedRef<Bitmap>>? = null,
+        /** 以圆形表示的定位精度的填充颜色 */
+        @Field val fillColor: Int? = null,
+        /** 以圆形表示的定位精度的描边颜色 */
+        @Field val strokeColor: Int? = null,
+        /** 以圆形表示的定位精度的描边宽度 */
+        @Field val strokeWidth: Int? = null,
+) : Record 
+
 data class TMapsUiSettings(
         @Field val myLocationButtonEnabled: Boolean? = true,
         /** 是否显示比例尺 */
@@ -48,9 +65,7 @@ data class TMapsUiSettings(
         @Field val compassEnabled: Boolean? = false,
         /** 是否显示缩放控件 */
         @Field val zoomControlsEnabled: Boolean? = false,
-
         @Field val myLocationEnabled: Boolean? = false,
-
 
         /** 是否允许旋转手势 */
         @Field val rotateGesturesEnabled: Boolean? = false,
@@ -60,7 +75,9 @@ data class TMapsUiSettings(
         @Field val tiltGesturesEnabled: Boolean? = false,
         /** 是否允许缩放手势 */
         @Field val zoomGesturesEnabled: Boolean? = false,
-        
+
+        /** 定位样式 */
+        @Field val myLocationStyle: MyLocationStyleRecord = MyLocationStyleRecord(),
 ) : Record
 
 data class TMapsCameraPosition(
@@ -76,7 +93,6 @@ data class TMapsCameraPosition(
         @Field val rotation: Float? = 0.0f,
         /** 地图俯仰角度 */
         @Field val pitch: Float? = 0.0f,
-
         @Field val timespan: Long? = 0L,
 ) : Record
 
@@ -90,7 +106,6 @@ data class MarkerRecord(
         @Field val id: String = UUID.randomUUID().toString(),
         @Field val clusterId: String? = null,
         @Field val isClusterable: Boolean? = false,
-      
         @Field val icon: Either<SharedRef<Drawable>, SharedRef<Bitmap>>? = null,
         /** 标记的位置 */
         @Field val position: MapLatLng? = MapLatLng(),
@@ -116,7 +131,6 @@ data class MarkerRecord(
         fun toMarkerOptions(map: TencentMap): MarkerOptions {
                 return MarkerOptions()
                         .position(position?.toLatLng() ?: LatLng(0.0, 0.0))
-                        
                         .icon(getIconDescriptor(icon))
                         .anchor(anchor.x, anchor.y)
                         .alpha(alpha ?: 1.0f)

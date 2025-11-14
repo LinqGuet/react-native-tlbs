@@ -1,7 +1,7 @@
-import { SharedRefType } from 'expo';
+import { SharedRef, SharedRefType } from 'expo';
 import type { Ref } from 'react';
 
-import type { StyleProp, ViewStyle } from 'react-native';
+import type { StyleProp, ViewStyle,ProcessedColorValue } from 'react-native';
 
 export type LatLng = {
   lat: number;
@@ -21,8 +21,32 @@ export enum MapType {
   MAP_TYPE_NAVI = 1012,
 }
 
+export enum MyLocationStyleType {
+  /** 连续定位，但不会移动到地图中心点，并且会跟随设备移动 */
+  LOCATION_TYPE_FOLLOW_NO_CENTER = 2,
+  /** 连续定位，且将视角移动到地图中心，定位点依照设备方向旋转，并且会跟随设备移动,默认是此种类型 */
+  LOCATION_TYPE_LOCATION_ROTATE = 0,
+  /** 连续定位，但不会移动到地图中心点，定位点依照设备方向旋转，并且跟随设备移动 */
+  LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER = 1,
+  /** 连续定位，但不会移动到地图中心点，地图依照设备方向旋转，并且会跟随设备移动 */
+  LOCATION_TYPE_MAP_ROTATE_NO_CENTER = 3,
+}
 
+export type MyLocationStyle = {
+  /** 定位类型 */
+  myLocationType?: MyLocationStyleType;
 
+  /** 定位图标的锚点位置，默认为 (0.5f, 0.5f) */
+  anchor?: MapsAnchor;
+  /** 定位点的图标 */
+  icon?: SharedRefType<'image'>;
+  /** 以圆形表示的定位精度的填充颜色 */
+  fillColor?: ProcessedColorValue|string;
+  /** 以圆形表示的定位精度的描边颜色 */
+  strokeColor?: ProcessedColorValue|string;
+  /** 以圆形表示的定位精度的描边宽度 */
+  strokeWidth?: number;
+}
 
 
 export type TMapsUiSettings = {
@@ -50,7 +74,11 @@ export type TMapsUiSettings = {
   tiltGesturesEnabled?: Boolean;
   /** 是否显示缩放手势 */
   zoomGesturesEnabled?: Boolean;
-  
+
+  /** 定位样式 */
+  myLocationStyle?: MyLocationStyle;
+
+
 }
 
 
@@ -202,47 +230,47 @@ export type MarkerRecord = {
 
   /** 标记的位置 */
   position?: LatLng;
-      
-        anchor?: MapsAnchor ;
-        alpha?: number;
-        flat?: boolean ;
-        rotation?: number ;
-        clockwise?: boolean ;
-        level?: number;
-        visible?: boolean;
-        draggable?: boolean;
-        fastLoad?: boolean;
-        infoWindowEnable?: boolean;
-        infoWindowAnchor?: MapsAnchor;
-        infoWindowOffset?: MapsAnchor;
-        viewInfoWindow?: boolean;
-        snippet?: string;
+
+  anchor?: MapsAnchor;
+  alpha?: number;
+  flat?: boolean;
+  rotation?: number;
+  clockwise?: boolean;
+  level?: number;
+  visible?: boolean;
+  draggable?: boolean;
+  fastLoad?: boolean;
+  infoWindowEnable?: boolean;
+  infoWindowAnchor?: MapsAnchor;
+  infoWindowOffset?: MapsAnchor;
+  viewInfoWindow?: boolean;
+  snippet?: string;
 }
 
 export type CalloutRecord = {
-    content?: string;
-    color?: string;
-    fontSize?: number;
-    borderRadius?: number;
-    borderWidth?: number;
-    borderColor?: string;
-    bgColor?: string;
-    padding?: number;
-    display?: string;
-    textAlign?: string;
-    anchorX?: number;
-    anchorY?: number;
-    collision?: string;
-        
+  content?: string;
+  color?: string;
+  fontSize?: number;
+  borderRadius?: number;
+  borderWidth?: number;
+  borderColor?: string;
+  bgColor?: string;
+  padding?: number;
+  display?: string;
+  textAlign?: string;
+  anchorX?: number;
+  anchorY?: number;
+  collision?: string;
+
 
 }
 
 export type CustomCalloutRecord = {
-      display?: string;
-      anchorX?: number;
-      anchorY?: number;
+  display?: string;
+  anchorX?: number;
+  anchorY?: number;
 
-    }
+}
 
 export type LabelRecord = {
   content?: string;
