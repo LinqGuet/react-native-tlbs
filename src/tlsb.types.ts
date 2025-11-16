@@ -1,4 +1,4 @@
-import { SharedRef, SharedRefType } from 'expo';
+import {  SharedRefType } from 'expo';
 import type { Ref } from 'react';
 
 import type { StyleProp, ViewStyle,ProcessedColorValue } from 'react-native';
