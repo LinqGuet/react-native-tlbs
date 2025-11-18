@@ -38,6 +38,15 @@ export default function App() {
             />
           </Link>
         </View>
+        <View style={styles.linkContainer}>
+          <Link href="/markers" asChild>
+            <Button 
+              title="地图标注" 
+              style={styles.linkButton}
+              onPress={() => console.log('地图标注')}
+            />
+          </Link>
+        </View>
       </ScrollView>
     </View>
   );
