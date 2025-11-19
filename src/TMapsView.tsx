@@ -77,7 +77,6 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
     // 步骤3: 执行原始的map操作
     return polylinesWithId.map((polyline) => ({
       ...polyline,
-      // @ts-expect-error
       color: processColor(polyline.color) ?? undefined,
       borderColor: processColor(polyline.borderColor) ?? undefined,
     }));
@@ -105,7 +104,6 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
     // 步骤3: 执行原始的map操作
     return polygonsWithId.map((polygon) => ({
       ...polygon,
-      // @ts-expect-error
       fillColor: processColor(polygon.fillColor) ?? undefined,
       strokeColor: processColor(polygon.strokeColor) ?? undefined,
     }));
@@ -133,7 +131,6 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
     // 步骤3: 执行原始的map操作
     return circlesWithId.map((circle) => ({
       ...circle,
-      // @ts-expect-error
       fillColor: processColor(circle.fillColor) ?? undefined,
       strokeColor: processColor(circle.strokeColor) ?? undefined, 
     }));
@@ -162,7 +159,6 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
     // 步骤3: 执行原始的map操作
     return arcsWithId.map((arc) => ({
       ...arc,
-      // @ts-expect-error
       color: processColor(arc.color) ?? undefined,
     }));
   })() : undefined;
