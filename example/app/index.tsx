@@ -47,6 +47,15 @@ export default function App() {
             />
           </Link>
         </View>
+        <View style={styles.linkContainer}>
+          <Link href="/polylines" asChild>
+            <Button 
+              title="地图折线" 
+              style={styles.linkButton}
+              onPress={() => console.log('地图折线')}   
+            />
+          </Link>
+        </View>
       </ScrollView>
     </View>
   );

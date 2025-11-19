@@ -26,6 +26,9 @@ export default function UiSettingsScence() {
         myLocationEnabled: true,
         myLocationStyle: {
             myLocationType: MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER,
+            strokeWidth: 100,
+            strokeColor: '#f60',
+            fillColor: '#f60',
         },
     });
 
@@ -74,7 +77,7 @@ export default function UiSettingsScence() {
             myLocationStyle: {
                 ...uiSettings?.myLocationStyle,
                 myLocationType: uiSettings?.myLocationStyle?.myLocationType === MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE ? MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER : MyLocationStyleType.LOCATION_TYPE_LOCATION_ROTATE,
-                strokeWidth: 100,
+                strokeWidth: 30,
                 strokeColor: randomColor(),
                 fillColor: randomColor(),
             }
