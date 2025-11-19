@@ -137,6 +137,26 @@ class TMapsViewModule : Module() {
         Log.d("TMapsViewModule", "polylines $polylines")
         view.addPolylines(polylines)  
       }
+
+      Prop("arcs") { view: TMapsView, arcs: List<ArcRecord> ->
+        // 打印markers
+        Log.d("TMapsViewModule", "arcs $arcs")
+        view.addArcs(arcs)  
+      }
+
+      Prop("polygons") { view: TMapsView, polygons: List<PolygonRecord> ->
+        // 打印markers
+        Log.d("TMapsViewModule", "polygons $polygons")
+        view.addPolygons(polygons)    
+      }
+
+      Prop("circles") { view: TMapsView, circles: List<CircleRecord> ->
+        // 打印markers
+        Log.d("TMapsViewModule", "circles $circles")
+        view.addCircles(circles)  
+      }
+
+      
     }
   }
 }

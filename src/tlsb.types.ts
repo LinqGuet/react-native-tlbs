@@ -1,7 +1,7 @@
-import {  SharedRefType } from 'expo';
+import { SharedRefType } from 'expo';
 import type { Ref } from 'react';
 
-import type { StyleProp, ViewStyle,ProcessedColorValue } from 'react-native';
+import type { StyleProp, ViewStyle, ProcessedColorValue } from 'react-native';
 
 export type LatLng = {
   lat: number;
@@ -41,9 +41,9 @@ export type MyLocationStyle = {
   /** 定位点的图标 */
   icon?: SharedRefType<'image'>;
   /** 以圆形表示的定位精度的填充颜色 */
-  fillColor?: ProcessedColorValue|string;
+  fillColor?: ProcessedColorValue | string;
   /** 以圆形表示的定位精度的描边颜色 */
-  strokeColor?: ProcessedColorValue|string;
+  strokeColor?: ProcessedColorValue | string;
   /** 以圆形表示的定位精度的描边宽度 */
   strokeWidth?: number;
 }
@@ -152,6 +152,12 @@ export type TMapsViewProps = {
 
   polylines?: PolylineRecord[];
 
+  arcs?: ArcRecord[];
+
+  circles?: CircleRecord[];
+
+  polygons?: PolygonRecord[];
+
 
 
   onLoad?: () => void;
@@ -229,9 +235,9 @@ export type PolylineRecord = {
   // 折线的路径点
   points?: LatLng[];
   // 折线的颜色
-  color?: ProcessedColorValue|string;
+  color?: ProcessedColorValue | string;
   // 折线的颜色列表
-  colorList?: ProcessedColorValue[]|string[];
+  colorList?: ProcessedColorValue[] | string[];
   // 折线的宽度
   width?: number;
   // 是否为虚线
@@ -239,13 +245,64 @@ export type PolylineRecord = {
   // 是否显示箭头
   arrowLine?: boolean;
   // 折线的边框颜色
-  borderColor?: ProcessedColorValue|string;
+  borderColor?: ProcessedColorValue | string;
   // 折线的边框宽度
   borderWidth?: number;
   // 折线的层级 
   level?: number;
 }
 
+export type ArcRecord = {
+  // 折线的唯一标识符
+  id?: string;
+  // 折线的路径点
+  start?: LatLng;
+  end?: LatLng;
+  pass?: LatLng;
+  // 折线的颜色
+  color?: ProcessedColorValue | string;
+  // 折线的宽度
+  width?: number;
+  // 折线的角度
+  angle?: number;
+}
+
+export type PolygonRecord = {
+  // 折线的唯一标识符
+  id?: string;
+  // 折线的路径点
+  points?: LatLng[];
+  // 折线的颜色
+  strokeColor?: ProcessedColorValue | string;
+
+  fillColor?: ProcessedColorValue | string;
+  // 折线的宽度
+  strokeWidth?: number;
+  // 是否为虚线
+  dottedLine?: boolean;
+  /** 折线的层级 */
+  zIndex?: number;
+}
+
+
+export type CircleRecord = {
+  // 折线的唯一标识符
+  id?: string;
+  // 折线的路径点
+  center?: LatLng;
+  // 圆的半径
+  radius?: number;
+  // 折线的颜色
+  strokeColor?: ProcessedColorValue | string;
+
+  fillColor?: ProcessedColorValue | string;
+  // 折线的宽度
+  strokeWidth?: number;
+  // 是否为虚线
+  dottedLine?: boolean;
+  /** 折线的层级 */
+  zIndex?: number;
+}
 
 
 export type MarkerRecord = {

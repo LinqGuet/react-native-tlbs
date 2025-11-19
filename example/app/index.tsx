@@ -56,6 +56,33 @@ export default function App() {
             />
           </Link>
         </View>
+         <View style={styles.linkContainer}>
+          <Link href="/polygons" asChild>
+            <Button 
+              title="地图多边形" 
+              style={styles.linkButton}
+              onPress={() => console.log('地图多边形')}     
+            />
+          </Link>
+        </View>
+        <View style={styles.linkContainer}>
+          <Link href="/circles" asChild>
+            <Button 
+              title="地图圆" 
+              style={styles.linkButton}
+              onPress={() => console.log('地图圆')}   
+            />
+          </Link>
+        </View>
+         <View style={styles.linkContainer}>
+          <Link href="/arcs" asChild>
+            <Button 
+              title="地图弧线" 
+              style={styles.linkButton}
+              onPress={() => console.log('地图弧线')}     
+            />
+          </Link>
+        </View>
       </ScrollView>
     </View>
   );

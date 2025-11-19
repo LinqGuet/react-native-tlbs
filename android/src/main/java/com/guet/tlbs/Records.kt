@@ -234,3 +234,117 @@ data class PolylineRecord(
                 return opts
         }
 }
+
+data class ArcRecord(
+        @Field val id: String = UUID.randomUUID().toString(),
+        @Field val start: MapLatLng? = null,
+        @Field val end: MapLatLng? = null,
+        @Field val pass: MapLatLng? = null,
+
+        /** 线的颜色 */
+        @Field val color: Int?,
+
+        /** 线的宽度 */
+        @Field val width: Float?,
+        @Field val angle: Float? = null,
+
+/** 压盖关系 */
+// @Field val level: Int?,
+) : Record {
+        // MarkerCollisionRelation.ALONE
+
+        fun toArcOptions(map: TencentMap): ArcOptions {
+                val opts =
+                        ArcOptions()
+                                .points(start?.toLatLng(), end?.toLatLng())
+                                .pass(pass?.toLatLng())
+                angle?.let { opts.angle(it) }
+                width?.let { opts.width(it) }
+                color?.let { opts.color(it) }
+                // level?.let { opts.level(it ?: OverlayLevel.OverlayLevelAboveLabels) }
+
+                return opts
+        }
+}
+
+data class PolygonRecord(
+        @Field val id: String = UUID.randomUUID().toString(),
+        @Field val points: List<MapLatLng>? = null,
+
+        /** 线的颜色 */
+        @Field val fillColor: Int?,
+
+        /** 线的颜色 */
+        @Field val strokeColor: Int?,
+
+        /** 线的宽度 */
+        @Field val strokeWidth: Float?,
+
+        /** 是否虚线 */
+        @Field val dottedLine: Boolean?,
+        @Field val zIndex: Int? = null,
+
+/** 压盖关系 */
+// @Field val level: Int?,
+) : Record {
+        // MarkerCollisionRelation.ALONE
+
+        fun toPolygonOptions(map: TencentMap): PolygonOptions {
+                val opts = PolygonOptions().addAll(points?.map { it.toLatLng() } ?: emptyList())
+                strokeWidth?.let { opts.strokeWidth(it) }
+                fillColor?.let { opts.fillColor(it) }
+                strokeColor?.let { opts.strokeColor(it) }
+                zIndex?.let { opts.zIndex(it) }
+                dottedLine?.let {
+
+                        if (dottedLine == true) {
+                                val pattern = listOf(35, 20)
+                                opts.pattern(pattern)
+                        } else {
+                                opts.pattern(null)
+                        }
+                }
+                return opts
+        }
+}
+
+
+
+data class CircleRecord(
+        @Field val id: String = UUID.randomUUID().toString(),
+        @Field val center: MapLatLng? = null,
+
+        @Field val radius: Double? = null,
+
+        /** 线的颜色 */
+        @Field val fillColor: Int?,
+
+        /** 线的颜色 */
+        @Field val strokeColor: Int?,
+
+        /** 线的宽度 */
+        @Field val strokeWidth: Float?,
+
+        /** 是否虚线 */
+        @Field val dottedLine: Boolean?,
+        @Field val zIndex: Int? = null,
+
+/** 压盖关系 */
+// @Field val level: Int?,
+) : Record {
+        // MarkerCollisionRelation.ALONE
+
+        fun toCircleOptions(map: TencentMap): CircleOptions {
+                val opts = CircleOptions().center(center?.toLatLng() ) 
+                radius?.let { opts.radius(it) }
+                strokeWidth?.let { opts.strokeWidth(it) }
+                fillColor?.let { opts.fillColor(it) }
+                strokeColor?.let { opts.strokeColor(it) }
+                zIndex?.let { opts.zIndex(it) }
+                dottedLine?.let {
+                        opts.borderType(if (dottedLine == true) CircleOptions.CircleBorderType.DOTTEDLINE_SQUARE else CircleOptions.CircleBorderType.REALLINE_DEFAULT)
+                }
+                return opts
+        }
+}
+

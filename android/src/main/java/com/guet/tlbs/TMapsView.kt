@@ -20,6 +20,12 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
 
     private val markerList = mutableListOf<Marker>()
     private val polylineList = mutableListOf<Polyline>()
+    private val arcList = mutableListOf<Arc>()
+    private val polygonList = mutableListOf<Polygon>()
+    private val circleList = mutableListOf<Circle>()
+
+
+
     // 存储markerRecord.id与地图SDK生成的marker.id的映射关系
     private val markerIdMap = HashMap<String, String>()
 
@@ -51,6 +57,37 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
             null
         }
     }
+    private fun findCircle(circleRecord: CircleRecord): Circle? {
+        // 根据circleIdMap中的映射关系查找circle
+        val sdkCircleId = markerIdMap[circleRecord.id]
+        return if (sdkCircleId != null) {
+            circleList.find { it.id == sdkCircleId }
+        } else {
+            null
+        }
+    }
+
+    private fun findArc(arcRecord: ArcRecord): Arc? {
+        // 根据arcIdMap中的映射关系查找arc
+        val sdkArcId = markerIdMap[arcRecord.id]
+        return if (sdkArcId != null) {
+            arcList.find { it.id == sdkArcId }
+        } else {
+            null
+        }
+    }
+
+    private fun findPolygon(polygonRecord: PolygonRecord): Polygon? {
+        // 根据polygonIdMap中的映射关系查找polygon
+        val sdkPolygonId = markerIdMap[polygonRecord.id]
+        return if (sdkPolygonId != null) {
+            polygonList.find { it.id == sdkPolygonId }
+        } else {
+            null
+        }
+    }
+
+
 
     // 通过地图SDK生成的marker.id找到对应的markerRecord.id
     internal fun findMarkerRecordIdBySdkId(sdkMarkerId: String): String? {
@@ -95,6 +132,178 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
         }
     }
 
+    internal fun addCircles(circleRecords: List<CircleRecord>) {
+        // val polyline = tencentMap?.addPolyline(polylineRecord.toPolylineOptions(tencentMap ?:
+        // return))
+        // 创建一个集合来存储所有新传入的polyline的id
+
+        val newCircleIds = HashSet<String>()
+        circleRecords?.forEach { circleRecord ->
+            val circle = findCircle(circleRecord)
+
+            if (circle == null) {
+
+                val newCircle =
+                        tencentMap?.addCircle(
+                                circleRecord.toCircleOptions(tencentMap ?: return@forEach)
+                        )
+                //                newCircle?.color = 0xff6600
+                Log.d("TMapsView", "addCircles $circleRecord")
+
+                // Log.d("TMapsView", "addCircles $circleRecords")
+                if (newCircle != null) {
+                    circleList.add(newCircle)
+                    newCircleIds.add(newCircle.id)
+                    // 存储circleRecord.id与地图SDK生成的circle.id的映射关系
+                    markerIdMap[circleRecord.id] = newCircle.id
+                    val pid = newCircle.id
+                }
+            } else {
+
+                newCircleIds.add(circle?.id ?: return@forEach)
+
+                updateOptionalProperty(circleRecord.radius) {
+                    if (circle.radius != it) { 
+                        circle.radius = it
+                    }
+                }
+                // 更新位置
+                circle.setOptions(circleRecord.toCircleOptions(tencentMap ?: return@forEach))
+            }
+        }
+
+        // 找出需要移除的circles（在circleList中但不在newCircleIds中的）
+        val circlesToRemove = ArrayList<Circle>()
+        for (circle in circleList) {
+            if (!newCircleIds.contains(circle.id)) {
+                circlesToRemove.add(circle)
+            }
+        }
+
+        // 移除标记
+        for (circle in circlesToRemove) {
+            // 打印移除的circleid
+            Log.d("TMapsView", "removeCircle sdkId: ${circle.id}")
+            // 从地图中移除
+            circle.remove()
+            // 从列表中移除
+            circleList.remove(circle)
+            // 从映射中移除
+            markerIdMap.entries.removeIf { it.value == circle.id }
+        }
+    }
+
+    internal fun addPolygons(polygonRecords: List<PolygonRecord>) {
+        // val polyline = tencentMap?.addPolyline(polylineRecord.toPolylineOptions(tencentMap ?:
+        // return))
+        // 创建一个集合来存储所有新传入的polyline的id
+
+        val newPolygonIds = HashSet<String>()
+        polygonRecords?.forEach { polygonRecord ->
+            val polygon = findPolygon(polygonRecord)
+
+            if (polygon == null) {
+
+                val newPolygon =
+                        tencentMap?.addPolygon(
+                                polygonRecord.toPolygonOptions(tencentMap ?: return@forEach)
+                        )
+                //                newPolyline?.color = 0xff6600
+                Log.d("TMapsView", "addPolygons $polygonRecord")
+
+                // Log.d("TMapsView", "addPolylines $polylineRecords")
+                if (newPolygon != null) {
+                    polygonList.add(newPolygon)
+                    newPolygonIds.add(newPolygon.id)
+                    // 存储polylineRecord.id与地图SDK生成的polyline.id的映射关系
+                    markerIdMap[polygonRecord.id] = newPolygon.id
+                    val pid = newPolygon.id
+                }
+            } else {
+
+                newPolygonIds.add(polygon?.id ?: return@forEach)
+
+                updateOptionalProperty(polygonRecord.points) {
+                    if (polygon.points != it) { 
+                        polygon.points = it.map { it.toLatLng() }
+                    }
+                }
+
+                val opts = polygonRecord.toPolygonOptions(tencentMap ?: return@forEach)
+                Log.d("TMapsView", "addPolygons $polygonRecord $opts")
+                // 更新位置
+                polygon.setOptions(opts)
+            }
+        }
+
+        // 找出需要移除的polygons（在polygonList中但不在newPolygonIds中的）
+        val polygonsToRemove = ArrayList<Polygon>()
+        for (polygon in polygonList) {
+            if (!newPolygonIds.contains(polygon.id)) {
+                polygonsToRemove.add(polygon)
+            }
+        }
+
+        // 移除标记
+        for (polygon in polygonsToRemove) {
+            // 打印移除的polygonid
+            Log.d("TMapsView", "removePolygon sdkId: ${polygon.id}")
+            // 从地图中移除
+            polygon.remove()
+            // 从列表中移除
+            polygonList.remove(polygon)
+            // 从映射中移除
+            markerIdMap.entries.removeIf { it.value == polygon.id }
+        }
+    }
+
+    internal fun addArcs(arcRecords: List<ArcRecord>) {
+        // val arc = tencentMap?.addArc(arcRecord.toArcOptions(tencentMap ?: return))
+        // 创建一个集合来存储所有新传入的arc的id
+
+        val newArcIds = HashSet<String>()
+        arcRecords?.forEach { arcRecord ->
+            val arc = findArc(arcRecord)
+            //先删除
+            if (arc != null) {
+                arc.remove()
+                arcList.remove(arc)
+            }
+            val newArc =
+                tencentMap?.addArc(arcRecord.toArcOptions(tencentMap ?: return@forEach))
+            //                newArc?.color = 0xff660000.toInt()
+            Log.d("TMapsView", "addArcs $arcRecord")
+
+            // Log.d("TMapsView", "addPolylines $polylineRecords")
+            if (newArc != null) {
+                arcList.add(newArc)
+                newArcIds.add(newArc.id)
+                // 存储arcRecord.id与地图SDK生成的arc.id的映射关系
+                markerIdMap[arcRecord.id] = newArc.id
+                val pid = newArc.id
+            }
+        }
+
+        // 找出需要移除的arcs（在arcList中但不在newArcIds中的）
+        val arcsToRemove = ArrayList<Arc>()
+        for (arc in arcList) {
+            if (!newArcIds.contains(arc.id)) {
+                arcsToRemove.add(arc)
+            }
+        }
+
+        // 移除标记
+        for (arc in arcsToRemove) {
+            // 打印移除的arcid
+            Log.d("TMapsView", "removeArc sdkId: ${arc.id}")
+            // 从地图中移除
+            arc.remove()
+            // 从列表中移除
+            arcList.remove(arc)
+            // 从映射中移除
+            markerIdMap.entries.removeIf { it.value == arc.id }
+        }
+    }
     internal fun addPolylines(polylineRecords: List<PolylineRecord>) {
         // val polyline = tencentMap?.addPolyline(polylineRecord.toPolylineOptions(tencentMap ?:
         // return))
