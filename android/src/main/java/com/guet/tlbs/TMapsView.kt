@@ -19,6 +19,7 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
     private val onMarkerClick by EventDispatcher<MarkerRecord>()
 
     private val markerList = mutableListOf<Marker>()
+    private val polylineList = mutableListOf<Polyline>()
     // 存储markerRecord.id与地图SDK生成的marker.id的映射关系
     private val markerIdMap = HashMap<String, String>()
 
@@ -41,18 +42,154 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
             null
         }
     }
+    private fun findPolyline(polylineRecord: PolylineRecord): Polyline? {
+        // 根据polylineIdMap中的映射关系查找polyline
+        val sdkPolylineId = markerIdMap[polylineRecord.id]
+        return if (sdkPolylineId != null) {
+            polylineList.find { it.id == sdkPolylineId }
+        } else {
+            null
+        }
+    }
 
     // 通过地图SDK生成的marker.id找到对应的markerRecord.id
     internal fun findMarkerRecordIdBySdkId(sdkMarkerId: String): String? {
         return markerIdMap.entries.find { it.value == sdkMarkerId }?.key
     }
 
+    // 通用属性更新辅助函数
+    private fun <T> updateIfChanged(currentValue: T, newValue: T, updateAction: (T) -> Unit) {
+        if (currentValue != newValue) {
+            updateAction(newValue)
+        }
+    }
+
+    // 处理可选属性的更新函数
+    private fun <T> updateOptionalProperty(optionalValue: T?, updateAction: (T) -> Unit) {
+        optionalValue?.let { updateAction(it) }
+    }
+
+    // 处理可选属性并比较当前值的更新函数
+    private fun <T> updateOptionalPropertyWithComparison(
+            optionalValue: T?,
+            getCurrentValue: () -> T,
+            updateAction: (T) -> Unit
+    ) {
+        optionalValue?.let { if (getCurrentValue() != it) updateAction(it) }
+    }
+
+    // 处理带默认值的可选属性更新
+    private fun <T> updatePropertyWithDefault(
+            optionalValue: T?,
+            defaultValue: T,
+            getCurrentValue: () -> T,
+            updateAction: (T) -> Unit
+    ) {
+        updateIfChanged(getCurrentValue(), optionalValue ?: defaultValue, updateAction)
+    }
+
+    // 处理需要条件判断的复杂更新
+    private fun updateIfCondition(condition: Boolean, updateAction: () -> Unit) {
+        if (condition) {
+            updateAction()
+        }
+    }
+
+    internal fun addPolylines(polylineRecords: List<PolylineRecord>) {
+        // val polyline = tencentMap?.addPolyline(polylineRecord.toPolylineOptions(tencentMap ?:
+        // return))
+        // 创建一个集合来存储所有新传入的polyline的id
+
+        val newPolylineIds = HashSet<String>()
+        polylineRecords?.forEach { polylineRecord ->
+            val polyline = findPolyline(polylineRecord)
+
+            if (polyline == null) {
+
+                val newPolyline =
+                        tencentMap?.addPolyline(
+                                polylineRecord.toPolylineOptions(tencentMap ?: return@forEach)
+                        )
+                //                newPolyline?.color = 0xff6600
+                Log.d("TMapsView", "addPolylines $polylineRecord")
+
+                // Log.d("TMapsView", "addPolylines $polylineRecords")
+                if (newPolyline != null) {
+                    polylineList.add(newPolyline)
+                    newPolylineIds.add(newPolyline.id)
+                    // 存储polylineRecord.id与地图SDK生成的polyline.id的映射关系
+                    markerIdMap[polylineRecord.id] = newPolyline.id
+                    val pid = newPolyline.id
+                }
+            } else {
+                val pid = polyline
+                Log.d("TMapsView", "found Polylines $pid $polylineRecord")
+
+                newPolylineIds.add(polyline?.id ?: return@forEach)
+
+                updateOptionalProperty(polylineRecord.points) {
+                    if (polyline.points != it) {
+                        polyline.points = it.map { it.toLatLng() }
+                    }
+                }
+                // 更新位置
+                val opts = polyline.getPolylineOptions()
+                // 更新其他属性
+
+                polylineRecord.color?.also { opts.color(it) }
+                polylineRecord.colorList?.also {
+                    val mColorList = it.takeIf { it.isNotEmpty() } ?: intArrayOf(0)
+                    val colorIndexList = (0 until mColorList.size).toList().toIntArray()
+                    if (mColorList.size > 0) opts.colors(mColorList, colorIndexList)
+                }
+                polylineRecord.width?.also { opts.width(it) }
+                polylineRecord.arrowLine?.also { opts.arrow(it) }
+                polylineRecord.dottedLine?.also {
+                    if (it == true) {
+                        val pattern = listOf(35, 20)
+                        opts.lineType(PolylineOptions.LineType.LINE_TYPE_DOTTEDLINE)
+                        opts.pattern(pattern)
+                    } else {
+                        opts.lineType(PolylineOptions.LineType.LINE_TYPE_IMAGEINARYLINE)
+                        opts.pattern(null)
+                    }
+                }
+                polylineRecord.borderColor?.also { opts.borderColor(it) }
+                polylineRecord.borderWidth?.also { opts.borderWidth(it) }
+                polylineRecord.level?.also { opts.level(it) }
+
+                polyline.polylineOptions = opts
+            }
+        }
+
+        // 找出需要移除的polylines（在polylineList中但不在newPolylineIds中的）
+        val polylinesToRemove = ArrayList<Polyline>()
+        for (polyline in polylineList) {
+            if (!newPolylineIds.contains(polyline.id)) {
+                polylinesToRemove.add(polyline)
+            }
+        }
+
+        // 移除标记
+        for (polyline in polylinesToRemove) {
+            // 打印移除的polylineid
+            Log.d("TMapsView", "removePolyline sdkId: ${polyline.id}")
+            // 从地图中移除
+            polyline.remove()
+            // 从列表中移除
+            polylineList.remove(polyline)
+            // 从映射中移除
+            markerIdMap.entries.removeIf { it.value == polyline.id }
+        }
+    }
+
     internal fun addMarkers(markers: List<MarkerRecord>) {
+
         // 创建一个集合来存储所有新传入的marker的id
         val newMarkerIds = HashSet<String>()
 
         // 处理添加和更新markers
-        markers.forEach { markerRecord ->
+        markers?.forEach { markerRecord ->
             val marker = findMarker(markerRecord)
             if (marker == null) {
                 val newMarker =
@@ -64,6 +201,9 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
                     newMarkerIds.add(newMarker.id)
                     // 存储markerRecord.id与地图SDK生成的marker.id的映射关系
                     markerIdMap[markerRecord.id] = newMarker.id
+                    if (markerRecord.infoWindowVisible == true) {
+                        newMarker.showInfoWindow()
+                    }
                     // 打印添加的markerid
                     Log.d(
                             "TMapsView",
@@ -72,43 +212,78 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
                 }
             } else {
                 newMarkerIds.add(marker?.id ?: return@forEach)
-                val options = markerRecord.toMarkerOptions(tencentMap ?: return@forEach)
-
-                // 统一检查必要参数，避免多处重复返回
-                val validOptions = options ?: return@forEach
-                val validMarkerRecord = markerRecord ?: return@forEach
-
-                // 设置位置、图标和基础属性
-                marker.setPosition(validOptions.position)
-                marker.setIcon(validOptions.icon)
-                marker.isVisible = validOptions.isVisible
-                marker.isDraggable = validOptions.isDraggable
-                marker.setZIndex(validOptions.zIndex)
-                marker.setRotation(validOptions.rotation)
-                marker.setTitle(validOptions.title)
-
-                // 设置锚点相关属性（避免重复调用）
-                // 使用传统if判断替代lambda表达式，以兼容JVM target 1.8
-                if (validMarkerRecord.anchor != null) {
-                    marker.setAnchor(validMarkerRecord.anchor.x, validMarkerRecord.anchor.y)
+                // 更新位置
+                updateOptionalProperty(markerRecord.position) {
+                    if (marker.position.latitude != it.lat || marker.position.longitude != it.lng) {
+                        marker.setPosition(it.toLatLng())
+                    }
                 }
 
-                if (validMarkerRecord.infoWindowAnchor != null) {
-                    marker.setInfoWindowAnchor(
-                            validMarkerRecord.infoWindowAnchor.x,
-                            validMarkerRecord.infoWindowAnchor.y
-                    )
+                // 更新锚点
+                updateOptionalProperty(markerRecord.anchor) {
+                    if (marker.anchorU != it.x || marker.anchorV != it.y) {
+                        marker.setAnchor(it.x, it.y)
+                    }
                 }
 
-                if (validMarkerRecord.infoWindowOffset != null) {
-                    marker.setInfoWindowOffset(
-                            validMarkerRecord.infoWindowOffset.x,
-                            validMarkerRecord.infoWindowOffset.y
-                    )
-                }
+                // 更新简单属性
+                updatePropertyWithDefault(
+                        markerRecord.alpha,
+                        0.0f,
+                        { marker.getAlpha() },
+                        { marker.setAlpha(it) }
+                )
+                updatePropertyWithDefault(
+                        markerRecord.rotation,
+                        0.0f,
+                        { marker.getRotation() },
+                        { marker.setRotation(it) }
+                )
+                updatePropertyWithDefault(
+                        markerRecord.level,
+                        0.0f,
+                        { marker.level.toFloat() },
+                        { marker.setLevel(it.toInt()) }
+                )
+                updatePropertyWithDefault(
+                        markerRecord.zIndex,
+                        0,
+                        { marker.zIndex },
+                        { marker.zIndex = it.toInt() }
+                )
+                updatePropertyWithDefault(
+                        markerRecord.visible,
+                        false,
+                        { marker.isVisible },
+                        { marker.isVisible = it }
+                )
+                updatePropertyWithDefault(
+                        markerRecord.draggable,
+                        false,
+                        { marker.isDraggable },
+                        { marker.isDraggable = it }
+                )
+                updatePropertyWithDefault(
+                        markerRecord.infoWindowEnable,
+                        false,
+                        { marker.isInfoWindowEnable },
+                        { marker.isInfoWindowEnable = it }
+                )
 
-                // 控制信息窗口显示/隐藏
-                if (validMarkerRecord.viewInfoWindow == true) {
+                // 更新标题和摘要
+                updateOptionalPropertyWithComparison(
+                        markerRecord.title,
+                        { marker.title ?: "" },
+                        { marker.title = it }
+                )
+                updateOptionalPropertyWithComparison(
+                        markerRecord.snippet,
+                        { marker.snippet ?: "" },
+                        { marker.snippet = it }
+                )
+
+                // 更新信息窗口可见性
+                if (markerRecord.infoWindowVisible == true) {
                     marker.showInfoWindow()
                 } else {
                     marker.hideInfoWindow()
@@ -195,6 +370,7 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
                                 MapLatLng(latLng.latitude, latLng.longitude, latLng.altitude)
                         )
                     }
+
                     // 设置指南针点击监听器
                     tencentMap?.setOnMarkerClickListener { marker ->
                         Log.d(
@@ -214,7 +390,7 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
                                                 ),
                                 )
                         )
-                        true
+                        false
                     }
 
                     // 使用匿名内部类替代lambda表达式，以兼容JVM target 1.8

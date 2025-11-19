@@ -59,19 +59,19 @@ export default function PolylinesScene() {
 
             <View style={styles.controlPanel}>
                 <View style={styles.controlItem}>
-                                    
-                                    <Text style={styles.controlLabel}>{polyline?.color?.toString()}</Text>
-                                    <Button 
-                                        title={`切换颜色: `} 
-                                        onPress={() => {
-                                            const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
-                                            setPolyline(prev => ({
-                                                ...prev,
-                                                color: randomColor
-                                            }));
-                                        }}
-                                    />
-                                </View>
+
+                    <Text style={styles.controlLabel}>{polyline?.color?.toString()}</Text>
+                    <Button
+                        title={`切换颜色: `}
+                        onPress={() => {
+                            const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16);
+                            setPolyline(prev => ({
+                                ...prev,
+                                color: randomColor
+                            }));
+                        }}
+                    />
+                </View>
 
                 {/* 控制 rotation 值 */}
                 <View style={styles.sliderContainer}>

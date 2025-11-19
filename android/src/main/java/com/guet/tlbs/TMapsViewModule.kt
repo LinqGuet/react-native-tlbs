@@ -69,6 +69,7 @@ class TMapsViewModule : Module() {
         settings.myLocationEnabled?.also { view.tencentMap?.isMyLocationEnabled = it }
 
         if (settings.myLocationEnabled == true) {
+          Log.d("TMapsViewModule", "strokeColor ${settings.myLocationStyle.strokeColor}")
           val myStyle = MyLocationStyle().apply {
             myLocationType (settings.myLocationStyle.myLocationType?: MyLocationStyle.LOCATION_TYPE_LOCATION_ROTATE_NO_CENTER)
             strokeWidth (settings.myLocationStyle.strokeWidth ?: 10)
@@ -129,6 +130,12 @@ class TMapsViewModule : Module() {
         // 打印markers
         Log.d("TMapsViewModule", "markers $markers")
         view.addMarkers(markers)
+      }
+
+      Prop("polylines") { view: TMapsView, polylines: List<PolylineRecord> ->
+        // 打印markers
+        Log.d("TMapsViewModule", "polylines $polylines")
+        view.addPolylines(polylines)  
       }
     }
   }

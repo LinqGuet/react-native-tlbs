@@ -13,8 +13,6 @@ import expo.modules.kotlin.sharedobjects.SharedRef
 import expo.modules.kotlin.types.Either
 import expo.modules.kotlin.types.toKClass
 import java.util.UUID
-import android.util.Log
-
 
 fun getIconDescriptor(icon: Either<SharedRef<Drawable>, SharedRef<Bitmap>>?): BitmapDescriptor? {
 
@@ -55,7 +53,7 @@ data class MyLocationStyleRecord(
         @Field val strokeColor: Int? = null,
         /** 以圆形表示的定位精度的描边宽度 */
         @Field val strokeWidth: Int? = null,
-) : Record 
+) : Record
 
 data class TMapsUiSettings(
         @Field val myLocationButtonEnabled: Boolean? = true,
@@ -120,6 +118,7 @@ data class MarkerRecord(
         @Field val draggable: Boolean? = false,
         @Field val fastLoad: Boolean? = true,
         @Field val infoWindowEnable: Boolean? = true,
+        @Field val infoWindowVisible: Boolean? = false,
         @Field val infoWindowAnchor: AnchorRecord = AnchorRecord(0.5f, 1.0f),
         @Field val infoWindowOffset: OffsetRecord = OffsetRecord(0, 0),
         @Field val viewInfoWindow: Boolean? = false,
@@ -181,3 +180,57 @@ data class LocationOptions(
         @Field val allowDirection: Boolean = true, // 是否允许方向传感器
         @Field val allowCache: Boolean = true // 是否允许使用缓存
 ) : Record
+
+data class PolylineRecord(
+        @Field val id: String = UUID.randomUUID().toString(),
+        @Field val points: List<MapLatLng>? = null,
+
+        /** 线的颜色 */
+        @Field val color: Int?,
+        /** 彩虹线 Int[] */
+        @Field val colorList: IntArray = intArrayOf(0),
+
+        /** 线的宽度 */
+        @Field val width: Float?,
+        /** 是否虚线 */
+        @Field val dottedLine: Boolean?,
+        /** 带箭头的线 */
+        @Field val arrowLine: Boolean?,
+        /** 线的边框颜色 */
+        @Field val borderColor: Int?,
+        /** 线的厚度 */
+        @Field val borderWidth: Float?,
+        /** 压盖关系 */
+        @Field val level: Int?,
+) : Record {
+        // MarkerCollisionRelation.ALONE
+
+        fun toPolylineOptions(map: TencentMap): PolylineOptions {
+                val mColorList = colorList?.takeIf { it.isNotEmpty() } ?: intArrayOf(0)
+                val colorIndexList = (0 until mColorList.size).toList().toIntArray()
+                val opts =
+                        PolylineOptions()
+                                .addAll(points?.map { it.toLatLng() } ?: emptyList())
+                                .colorType(PolylineOptions.ColorType.LINE_COLOR_ARGB)
+                width?.let { opts.width(it) }
+                borderWidth?.let { opts.borderWidth(it) }
+                dottedLine?.let {
+                        if (dottedLine == true) {
+                                val pattern = listOf(35, 20)
+                                opts.lineType(PolylineOptions.LineType.LINE_TYPE_DOTTEDLINE)
+                                opts.pattern(pattern)
+                        } else {
+                                opts.lineType(PolylineOptions.LineType.LINE_TYPE_IMAGEINARYLINE)
+                                opts.pattern(null)
+                        }
+                }
+                color?.let { opts.color(it) }
+                mColorList.size.let { if (it > 1) opts.colors(mColorList, colorIndexList) }
+                // opts.colors(mColorList, colorIndexList)
+                arrowLine?.let { opts.arrow(it) }
+                borderColor?.let { opts.borderColor(it) }
+                level?.let { opts.level(it ?: OverlayLevel.OverlayLevelAboveLabels) }
+
+                return opts
+        }
+}

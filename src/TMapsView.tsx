@@ -3,7 +3,7 @@ import { requireNativeViewManager } from 'expo-modules-core';
 
 import * as React from 'react';
 
-import {processColor} from 'react-native'
+import { processColor } from 'react-native'
 
 import { TMapsViewProps } from './tlsb.types';
 const NativeView = requireNativeViewManager('TMapsView');
@@ -29,6 +29,7 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
     onMapLongClick,
     onMarkerClick,
     markers,
+    polylines,
     uiSettings
 
   } = props;
@@ -45,35 +46,59 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
   const onNativeCameraChange = useNativeEvent(onCameraChange);
   const onNativeMarkerClick = useNativeEvent(onMarkerClick);
 
+  const generateRandomId = (type:string) => {
+    // 使用时间戳和两个随机数组合生成唯一ID
+    const timestamp = Date.now();
+    const random1 = Math.random().toString(36).substring(2, 10);
+    const random2 = Math.random().toString(36).substring(2, 10);
+    return `${type}-${timestamp}-${random1}-${random2}`;
+  };
 
+    const parsedPolylines = polylines ? (() => {
 
+    // 步骤1: 为没有id的marker分配不重复的随机id
+    const polylinesWithId = polylines.map(polyline =>{
+      polyline.id= polyline.id || generateRandomId('polyline')
+      return polyline;
+    } );
+
+    // 步骤2: 检查是否有重复的id
+    const idSet = new Set<string>();
+    for (const polyline of polylinesWithId) {
+      if (idSet.has(polyline?.id || '')) {
+        console.error(`错误: 发现重复的polyline ID: ${polyline?.id}`);
+        throw new Error(`发现重复的polyline ID: ${polyline?.id}`);
+      }
+      idSet.add(polyline?.id || '');
+    }
+
+    // 步骤3: 执行原始的map操作
+    return polylinesWithId.map((polyline) => ({
+      ...polyline,
+      // @ts-expect-error
+      color: processColor(polyline.color) ?? undefined,
+      borderColor: processColor(polyline.borderColor) ?? undefined,
+    }));
+  })() : undefined;
 
 
 
   const parsedMarkers = markers ? (() => {
-    // 生成随机ID的函数（同步版本）
-    const generateRandomId = () => {
-      // 使用时间戳和两个随机数组合生成唯一ID
-      const timestamp = Date.now();
-      const random1 = Math.random().toString(36).substring(2, 10);
-      const random2 = Math.random().toString(36).substring(2, 10);
-      return `marker-${timestamp}-${random1}-${random2}`;
-    };
 
     // 步骤1: 为没有id的marker分配不重复的随机id
-    const markersWithId = markers.map(marker => ({
-      ...marker,
-      id: marker.id || generateRandomId(),
-    }));
+    const markersWithId = markers.map(marker =>{
+      marker.id = marker.id || generateRandomId('marker');
+      return marker;
+    } );
 
     // 步骤2: 检查是否有重复的id
     const idSet = new Set<string>();
     for (const marker of markersWithId) {
-      if (idSet.has(marker.id)) {
-        console.error(`错误: 发现重复的marker ID: ${marker.id}`);
-        throw new Error(`发现重复的marker ID: ${marker.id}`);
+      if (idSet.has(marker?.id || '')) {
+        console.error(`错误: 发现重复的marker ID: ${marker?.id}`);
+        throw new Error(`发现重复的marker ID: ${marker?.id}`);
       }
-      idSet.add(marker.id);
+      idSet.add(marker?.id || '');
     }
 
     // 步骤3: 执行原始的map操作
@@ -89,8 +114,8 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
     ...uiSettings,
     myLocationStyle: {
       ...uiSettings?.myLocationStyle,
-      fillColor: processColor(uiSettings?.myLocationStyle?.fillColor)?? undefined,
-      strokeColor: processColor(uiSettings?.myLocationStyle?.strokeColor)?? undefined,
+      fillColor: processColor(uiSettings?.myLocationStyle?.fillColor) ?? undefined,
+      strokeColor: processColor(uiSettings?.myLocationStyle?.strokeColor) ?? undefined,
     },
   }) : undefined;
 
@@ -103,6 +128,7 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
       {...props}
       uiSettings={parsedUiSettings}
       markers={parsedMarkers}
+      polylines={parsedPolylines}
       onLoad={onNativeMapLoaded}
       onMapClick={onNativeMapClick}
       onMapLongClick={onNativeMapLongClick}

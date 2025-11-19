@@ -150,6 +150,10 @@ export type TMapsViewProps = {
 
   markers?: MarkerRecord[];
 
+  polylines?: PolylineRecord[];
+
+
+
   onLoad?: () => void;
 
   onMapClick?: (position: LatLng) => void;
@@ -219,12 +223,41 @@ export type LBSLocationModuleEvents = {
   onStatusUpdate: (params: TLBStatusEvent) => void;
 };
 
+export type PolylineRecord = {
+  // 折线的唯一标识符
+  id?: string;
+  // 折线的路径点
+  points?: LatLng[];
+  // 折线的颜色
+  color?: ProcessedColorValue|string;
+  // 折线的颜色列表
+  colorList?: ProcessedColorValue[]|string[];
+  // 折线的宽度
+  width?: number;
+  // 是否为虚线
+  dottedLine?: boolean;
+  // 是否显示箭头
+  arrowLine?: boolean;
+  // 折线的边框颜色
+  borderColor?: ProcessedColorValue|string;
+  // 折线的边框宽度
+  borderWidth?: number;
+  // 折线的层级 
+  level?: number;
+}
+
+
 
 export type MarkerRecord = {
+  // 标记的唯一标识符
   id?: string;
+  // 标记的聚类ID
   clusterId?: string;
+  // 是否可聚类
   isClusterable?: boolean;
+  // 标记的标题
   title?: string;
+  // 标记的层级
   zIndex?: number;
   icon?: SharedRefType<'image'>;
 
@@ -243,6 +276,7 @@ export type MarkerRecord = {
   infoWindowEnable?: boolean;
   infoWindowAnchor?: MapsAnchor;
   infoWindowOffset?: MapsAnchor;
+  infoWindowVisible?: boolean;
   viewInfoWindow?: boolean;
   snippet?: string;
 }
