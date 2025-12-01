@@ -135,16 +135,15 @@ class TMapsView(context: Context, appContext: AppContext) : ExpoView(context, ap
     internal fun fitToMarkers() {
         Log.d("TMapsView", "fitToMarkers ${markerList.size}")
         if (markerList.isNotEmpty()) {
-            val bounds = LatLngBounds.builder()
+            var overlays = mutableListOf<IOverlay>()
             for (marker in markerList) {
-                bounds.include(marker.position)
+                overlays.add(marker)
             }
-            tencentMap?.moveCamera(
-                    CameraUpdateFactory.newLatLngBounds(
-                            bounds.build(),
-                            100
-                    )
-            )
+            tencentMap?.moveCamera(CameraUpdateFactory.newCameraPosition(
+                tencentMap?.calculateZoomToSpanLevel(
+                overlays, null,
+                0, 0, 0, 0)));
+
         }
     }
 

@@ -130,7 +130,7 @@ class TMapsViewModule : Module() {
         // 打印markers
         Log.d("TMapsViewModule", "markers $markers")
         view.addMarkers(markers)
-        if(markers?.size ?: 0 > 3) {
+        if(markers.size > 3) {
           view.fitToMarkers()
         }
       }
