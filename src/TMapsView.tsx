@@ -182,6 +182,8 @@ export const TMapsView = function ExpoWebView(props: TMapsViewProps) {
       }
       idSet.add(marker?.id || '');
     }
+    // @ts-expect-error
+    console.log('markers',markers,markers[0]?.icon.__expo_shared_object_id__)
 
     // 步骤3: 执行原始的map操作
     return markersWithId.map((marker) => ({

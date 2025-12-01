@@ -1,8 +1,9 @@
 
-import { Button, Text, View, StyleSheet, Switch } from 'react-native';
+import { Button, Text, View, StyleSheet, Switch, Image } from 'react-native';
 import { LatLng, MapType, TMapsCameraPosition, TMapsUiSettings, TMapsView, MarkerRecord } from 'react-native-tlbs';
 import React, { useState } from 'react';
 import Slider from '@react-native-community/slider';
+import {useImage} from 'expo-image';
 
 export default function MarkersScence() {
 
@@ -10,6 +11,7 @@ export default function MarkersScence() {
         lat: 39.909,
         lng: 116.39742,
     });
+    const image = useImage(require('../assets/favicon.png'));
 
     const [marker, setMarker] = useState<MarkerRecord>({
         position: center,
@@ -18,7 +20,10 @@ export default function MarkersScence() {
         viewInfoWindow: true,
         alpha: 1,
         infoWindowVisible: false,
+        icon:require('../assets/favicon.png'),
     });
+    console.log('MarkersScence',marker,require('../assets/favicon.png').__expo_shared_object_id__)
+
 
 
 
@@ -31,7 +36,6 @@ export default function MarkersScence() {
                 mapType={MapType.MAP_TYPE_NEW_3D_IMMERSIVE}
                 style={styles.map}
                 cameraPosition={{
-                    center: center,
                     zoom: 15,
                 }}
                 markers={[marker]}

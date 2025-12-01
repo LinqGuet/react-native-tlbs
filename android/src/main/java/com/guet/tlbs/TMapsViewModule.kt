@@ -130,6 +130,9 @@ class TMapsViewModule : Module() {
         // 打印markers
         Log.d("TMapsViewModule", "markers $markers")
         view.addMarkers(markers)
+        if(markers?.size ?: 0 > 3) {
+          view.fitToMarkers()
+        }
       }
 
       Prop("polylines") { view: TMapsView, polylines: List<PolylineRecord> ->

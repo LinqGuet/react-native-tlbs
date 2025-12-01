@@ -4,6 +4,8 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import androidx.compose.ui.geometry.Offset
+import android.util.Log
+
 import com.tencent.tencentmap.mapsdk.maps.TencentMap
 import com.tencent.tencentmap.mapsdk.maps.model.*
 import com.tencent.tencentmap.mapsdk.maps.model.LatLng
@@ -15,8 +17,10 @@ import expo.modules.kotlin.types.toKClass
 import java.util.UUID
 
 fun getIconDescriptor(icon: Either<SharedRef<Drawable>, SharedRef<Bitmap>>?): BitmapDescriptor? {
+    Log.d("getIconDescriptor", "icon: $icon")
 
         return icon?.let { icon ->
+
                 val bitmap =
                         if (icon.`is`(toKClass<SharedRef<Drawable>>())) {
                                 (icon.get(toKClass<SharedRef<Drawable>>()).ref as? BitmapDrawable)
