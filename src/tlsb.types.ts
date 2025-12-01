@@ -179,6 +179,7 @@ export type TMapsViewProps = {
  * 定位信息接口
  */
 export type LocationData = {
+  docId?: string;
   latitude: number;
   longitude: number;
   altitude: number;
